@@ -3,8 +3,8 @@ services:
     build: .
     image: anal:latest
     volumes:
-      - ./stats.json:/app/stats.json
-      - ./slow.log:/app/slow.log
+      - ./output:/app/output
+    working_dir: /app/output
     # Edit these parameters before running 'docker compose up'
     command: >
       --page https://example.com

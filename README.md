@@ -42,10 +42,11 @@ docker compose run --rm anal --page https://example.com --duration 360 --repeatE
 
 **Direct docker (without compose):**
 ```bash
-docker build -t anal . && docker run --rm -v $(pwd)/stats.json:/app/stats.json -v $(pwd)/slow.log:/app/slow.log anal --page https://example.com --duration 60 --repeatEvery 5
+mkdir -p output
+docker build -t anal . && docker run --rm -v $(pwd)/output:/app/output -w /app/output anal --page https://example.com --duration 60 --repeatEvery 5
 ```
 
-Output files (`stats.json`, `slow.log`) are automatically saved to your current directory.
+Output files (`stats.json`, `slow.log`) are saved to the `./output/` directory.
 
 ### With npm
 
@@ -76,6 +77,8 @@ node index.js --page <URL> --duration <seconds> --repeatEvery <seconds> [OPTIONS
 ### Files
 - **stats.json** - Complete statistics with timestamps and latency data
 - **slow.log** - Timestamped log of all requests exceeding 1500ms
+
+When using Docker, files are saved to `./output/` directory. When using npm directly, files are saved to the current directory.
 
 ## How It Works
 

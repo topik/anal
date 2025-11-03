@@ -1,3 +1,5 @@
 node_modules/
 stats.json
 slow.log
+output/*
+!output/.gitkeep

@@ -203,7 +203,13 @@ function calculateStats(serverStats) {
 }
 
 function displayStats() {
-  console.clear();
+  // Only clear in interactive terminals (not in Docker logs)
+  if (process.stdout.isTTY) {
+    console.clear();
+  } else {
+    console.log('\n' + '='.repeat(80));
+  }
+
   console.log(chalk.cyan('='.repeat(80)));
   console.log(chalk.cyan.bold('LATENCY MONITORING - LIVE STATISTICS'));
   console.log(chalk.cyan('='.repeat(80)));
