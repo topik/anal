@@ -13,45 +13,58 @@ Monitor website latency across multiple load-balanced servers with real-time sta
 
 ## Installation
 
+### With npm
 ```bash
 npm install
 ```
 
+### With Docker
+No installation needed - just build the image.
+
 ## Usage
+
+### With Docker (Recommended for servers)
+
+**One command - edit docker-compose.yml first, then run:**
+```bash
+docker compose up --build
+```
+
+**Or pass parameters directly:**
+```bash
+docker compose run --rm anal --page https://example.com --duration 60 --repeatEvery 5
+```
+
+**With 4 servers:**
+```bash
+docker compose run --rm anal --page https://example.com --duration 360 --repeatEvery 5 --serverCount 4 --header x-server
+```
+
+**Direct docker (without compose):**
+```bash
+docker build -t anal . && docker run --rm -v $(pwd)/stats.json:/app/stats.json -v $(pwd)/slow.log:/app/slow.log anal --page https://example.com --duration 60 --repeatEvery 5
+```
+
+Output files (`stats.json`, `slow.log`) are automatically saved to your current directory.
+
+### With npm
 
 ```bash
 node index.js --page <URL> --duration <seconds> --repeatEvery <seconds> [OPTIONS]
 ```
 
-### Required Parameters
+### Parameters
 
+**Required:**
 - `--page`, `-p`: URL to monitor
 - `--duration`, `-d`: Duration in seconds
 - `--repeatEvery`, `-r`: Interval between requests in seconds (randomized ±50%)
 
-### Optional Parameters
-
+**Optional:**
 - `--header`, `-H`: Custom header name (default: `x-server`)
 - `--servers`, `-s`: Comma-separated server list (e.g., "WWW1,WWW2,APP1")
 - `--serverCount`, `-c`: Auto-generate N servers
 - `--serverPrefix`, `-P`: Prefix for auto-generated servers (default: "WWW")
-
-### Examples
-
-**Single server (default):**
-```bash
-node index.js --page https://example.com --duration 60 --repeatEvery 5
-```
-
-**Auto-generate 4 servers:**
-```bash
-node index.js --page https://example.com --duration 360 --repeatEvery 5 --serverCount 4 --header x-server
-```
-
-**Custom server list:**
-```bash
-node index.js --page https://api.example.com --duration 300 --repeatEvery 10 --servers "APP1,APP2,DB1" --header x-backend
-```
 
 ## Output
 

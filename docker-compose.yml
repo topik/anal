@@ -1,0 +1,14 @@
+services:
+  anal:
+    build: .
+    image: anal:latest
+    volumes:
+      - ./stats.json:/app/stats.json
+      - ./slow.log:/app/slow.log
+    # Edit these parameters before running 'docker compose up'
+    command: >
+      --page https://example.com
+      --duration 60
+      --repeatEvery 5
+      --serverCount 4
+      --header x-server
