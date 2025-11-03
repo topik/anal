@@ -1,19 +1,15 @@
 # ANAL - Automated Network Analysis of Latency
 
-A console utility to monitor website latency across multiple load-balanced servers with real-time statistics and intelligent tracking.
+Monitor website latency across multiple load-balanced servers with real-time statistics.
 
 ## Features
 
-- **Flexible server configuration**: Single server mode, auto-generated servers, or custom server list
-- **Custom header injection** for load balancer routing
-- Staggered requests with random delays to avoid simultaneous server loads
-- Randomized request intervals (averages to your specified interval)
+- Flexible server configuration (single server, auto-generated, or custom list)
+- Custom header injection for load balancer routing
+- Staggered requests with randomized intervals
 - Slow request tracking (>1500ms threshold)
-- Color-coded terminal output for easy reading
-- Real-time statistics display during monitoring
-- Final analytics summary at the end
-- Automatic export of statistics to `stats.json`
-- Fully configurable via command-line parameters
+- Color-coded terminal output
+- Automatic export to `stats.json` and `slow.log`
 
 ## Installation
 
@@ -29,136 +25,57 @@ node index.js --page <URL> --duration <seconds> --repeatEvery <seconds> [OPTIONS
 
 ### Required Parameters
 
-- `--page`, `-p`: URL of the website to monitor
-- `--duration`, `-d`: Total duration of monitoring in seconds
-- `--repeatEvery`, `-r`: Average interval between requests in seconds (actual timing is randomized ±50%)
+- `--page`, `-p`: URL to monitor
+- `--duration`, `-d`: Duration in seconds
+- `--repeatEvery`, `-r`: Interval between requests in seconds (randomized ±50%)
 
-### Optional Parameters (Server Configuration)
+### Optional Parameters
 
-- `--header`, `-H`: Custom header name for load balancer routing (default: `x-server` when servers configured)
-- `--servers`, `-s`: Comma-separated list of server values (e.g., "WWW1,WWW2,WWW3,WWW4")
-- `--serverCount`, `-c`: Auto-generate N servers with a prefix (e.g., 4 generates WWW1-WWW4)
+- `--header`, `-H`: Custom header name (default: `x-server`)
+- `--servers`, `-s`: Comma-separated server list (e.g., "WWW1,WWW2,APP1")
+- `--serverCount`, `-c`: Auto-generate N servers
 - `--serverPrefix`, `-P`: Prefix for auto-generated servers (default: "WWW")
 
 ### Examples
 
-#### Single Server Mode (Default)
+**Single server (default):**
 ```bash
 node index.js --page https://example.com --duration 60 --repeatEvery 5
 ```
-Monitors a single URL without custom headers.
 
-#### Auto-Generate 4 Servers
+**Auto-generate 4 servers:**
 ```bash
 node index.js --page https://example.com --duration 360 --repeatEvery 5 --serverCount 4 --header x-server
 ```
-Monitors with headers: `x-server: WWW1`, `x-server: WWW2`, `x-server: WWW3`, `x-server: WWW4`
 
-#### Custom Server List
+**Custom server list:**
 ```bash
 node index.js --page https://api.example.com --duration 300 --repeatEvery 10 --servers "APP1,APP2,DB1" --header x-backend
 ```
-Monitors with headers: `x-backend: APP1`, `x-backend: APP2`, `x-backend: DB1`
 
-#### Auto-Generate with Custom Prefix
-```bash
-node index.js --page https://example.com --duration 120 --repeatEvery 5 --serverCount 6 --serverPrefix NODE --header x-node
-```
-Monitors with headers: `x-node: NODE1`, `x-node: NODE2`, ..., `x-node: NODE6`
+## Output
 
-## Statistics Displayed
+### Terminal Display
+- Per-server statistics (requests, errors, latency, success rate)
+- Slow request tracking (>1500ms)
+- Color coding: Green (good), Yellow (warning), Red (issues)
 
-### During Monitoring (Live)
-- Total requests per server
-- Error count per server
-- Average latency (all requests) per server
-- Average latency (excluding slow requests >1500ms) per server
-- Minimum and maximum latency per server
-- Success rate per server
-- Slow request count and percentage (>1500ms)
-- Average and maximum slow request latency
-
-### Final Summary
-- Total requests across all servers
-- Successful vs failed requests per server
-- Detailed latency statistics per server
-- Overall success rate
-- Total slow requests across all servers
-- Statistics exported to `stats.json`
-
-### Color Coding
-- **Green**: Good performance (success rate ≥95%, latency <1000ms)
-- **Yellow**: Warning (success rate 80-95%, latency 1000-1500ms)
-- **Red**: Issues (success rate <80%, latency >1500ms)
+### Files
+- **stats.json** - Complete statistics with timestamps and latency data
+- **slow.log** - Timestamped log of all requests exceeding 1500ms
 
 ## How It Works
 
-### Single Server Mode
-When no server configuration is provided, the script monitors a single URL without any custom headers. This is useful for basic latency monitoring.
+**Single Server Mode:** Monitors a URL without custom headers.
 
-### Multi-Server Mode
-When servers are configured (via `--servers` or `--serverCount`), the script sends staggered HTTP requests to the specified URL with custom headers. For example, with 4 servers and header name `x-server`:
-- `x-server: WWW1`
-- `x-server: WWW2`
-- `x-server: WWW3`
-- `x-server: WWW4`
+**Multi-Server Mode:** Sends staggered requests with custom headers (e.g., `x-server: WWW1`) to route traffic to specific backend servers via load balancer. Requests are randomized (100-800ms delay between servers, ±50% interval variance) to simulate realistic traffic.
 
-Each request is sent with a random delay (100-800ms) between servers to avoid hitting all servers simultaneously. The interval between monitoring cycles is also randomized (±50% of your specified interval) to simulate more realistic traffic patterns.
+## Important Notes
 
-These headers tell the load balancer which specific server instance to route the request to, allowing you to monitor latency for each server independently.
+**Latency measurements include complete round-trip time:** WiFi/network delay + internet transit + server processing + return path. This reflects end-user experience.
 
-## Understanding Latency Measurements
+For server-only latency, run the script from a server in the same datacenter or check server-side logs.
 
-**Important**: The latency measurements include the **complete round-trip time** from your machine, which consists of:
+WiFi instability can cause latency variance. Use wired connection for consistent measurements.
 
-1. **WiFi/Network delay** (your device → router → ISP)
-2. **Internet transit time** (ISP → server's network)
-3. **Server processing time**
-4. **Return path** (all the way back to your device)
-
-This means the measurements reflect the **end-user experience** - what a real user would experience accessing the site from your location.
-
-### For Server-Only Latency
-If you want to measure pure server performance without network overhead:
-- Run the script on a server in the same datacenter/network as your target servers
-- Use SSH to execute it from a VPS/cloud instance close to your infrastructure
-- Check server-side application logs for processing time only
-
-### WiFi Considerations
-If running on WiFi:
-- Unstable WiFi signals can increase latency variance
-- Consider using a wired connection for more consistent measurements
-- Large fluctuations may indicate WiFi issues rather than server problems
-
-## Output Files
-
-### stats.json
-The script automatically creates/overwrites `stats.json` with detailed statistics including:
-- Timestamp of the test run
-- Per-server statistics (requests, latency, success rate, slow requests)
-- Average latency with and without slow requests
-- Overall aggregated statistics
-- Complete latency data for all requests
-
-### slow.log
-The script appends to `slow.log` whenever a request exceeds the 1500ms threshold. Each entry includes:
-- Timestamp (ISO format)
-- Server name (e.g., WWW1, APP1, or "default" for single server mode)
-- URL being monitored
-- Request header (e.g., `x-server: WWW1` or "No custom header" for single server mode)
-- Latency in milliseconds
-- Status (SUCCESS or ERROR)
-
-This log file helps you correlate slow requests with server-side events by checking timestamps on your infrastructure.
-
-## Stopping the Script
-
-Press `Ctrl+C` to stop monitoring early. The script will display final statistics before exiting.
-
----
-
-## About the Name
-
-**ANAL** stands for **Automated Network Analysis of Latency**. Yes, we're aware of the name. Yes, it's intentional. Yes, it's memorable. 😎
-
-When your infrastructure needs deep analysis, ANAL delivers the insights.
+Press `Ctrl+C` to stop and display final statistics.
