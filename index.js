@@ -5,6 +5,10 @@ const yargs = require('yargs/yargs');
 const { hideBin } = require('yargs/helpers');
 const chalk = require('chalk');
 const fs = require('fs');
+const path = require('path');
+
+// Set output directory (Docker uses /app/output, local uses current dir)
+const OUTPUT_DIR = process.env.OUTPUT_DIR || '.';
 
 const argv = yargs(hideBin(process.argv))
   .option('page', {
@@ -101,7 +105,7 @@ function logSlowRequest(url, server, latency, timestamp, error = false) {
   const logLine = `[${logEntry.timestamp}] ${logEntry.server} | ${logEntry.url} | ${logEntry.header} | Latency: ${logEntry.latency} | Status: ${logEntry.status}\n`;
 
   try {
-    fs.appendFileSync('slow.log', logLine);
+    fs.appendFileSync(path.join(OUTPUT_DIR, 'slow.log'), logLine);
   } catch (err) {
     console.error(chalk.red('Failed to write to slow.log:'), err.message);
   }
@@ -359,7 +363,7 @@ function exportStatsToJson() {
   };
 
   try {
-    fs.writeFileSync('stats.json', JSON.stringify(exportData, null, 2));
+    fs.writeFileSync(path.join(OUTPUT_DIR, 'stats.json'), JSON.stringify(exportData, null, 2));
     console.log(chalk.green('\n✓ Statistics exported to stats.json'));
   } catch (error) {
     console.log(chalk.red('\n✗ Failed to export statistics:'), error.message);

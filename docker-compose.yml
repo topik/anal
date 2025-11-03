@@ -4,7 +4,8 @@ services:
     image: anal:latest
     volumes:
       - ./output:/app/output
-    working_dir: /app/output
+    environment:
+      - OUTPUT_DIR=/app/output
     # Edit these parameters before running 'docker compose up'
     command: >
       --page https://example.com

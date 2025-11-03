@@ -25,25 +25,27 @@ No installation needed - just build the image.
 
 ### With Docker (Recommended for servers)
 
-**One command - edit docker-compose.yml first, then run:**
+**Interactive mode with live updating statistics (recommended):**
+```bash
+docker compose run --rm -it anal --page https://example.com --duration 60 --repeatEvery 5
+```
+
+**With 4 servers (interactive):**
+```bash
+docker compose run --rm -it anal --page https://example.com --duration 360 --repeatEvery 5 --serverCount 4 --header x-server
+```
+
+**Background mode (logs scroll, statistics don't update in place):**
 ```bash
 docker compose up --build
 ```
 
-**Or pass parameters directly:**
-```bash
-docker compose run --rm anal --page https://example.com --duration 60 --repeatEvery 5
-```
-
-**With 4 servers:**
-```bash
-docker compose run --rm anal --page https://example.com --duration 360 --repeatEvery 5 --serverCount 4 --header x-server
-```
+The `-it` flags enable interactive TTY mode, allowing statistics to refresh in place like a normal terminal. Without `-it`, statistics will be appended to logs instead of updating.
 
 **Direct docker (without compose):**
 ```bash
 mkdir -p output
-docker build -t anal . && docker run --rm -v $(pwd)/output:/app/output -w /app/output anal --page https://example.com --duration 60 --repeatEvery 5
+docker build -t anal . && docker run --rm -it -v $(pwd)/output:/app/output -e OUTPUT_DIR=/app/output anal --page https://example.com --duration 60 --repeatEvery 5
 ```
 
 Output files (`stats.json`, `slow.log`) are saved to the `./output/` directory.
